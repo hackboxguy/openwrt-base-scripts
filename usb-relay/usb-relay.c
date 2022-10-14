@@ -130,12 +130,12 @@ int main(int argc, char *argv[])
 	}
 	buffer[0]=0XA0;
 	buffer[1]=0x01;
-	if(strcmp(relay_state,"on"))
+	if(strcmp(relay_state,"off"))
 	{
 		buffer[2]=0x01;
 		buffer[3]=0xA2;
 	}
-	else //off
+	else //on
 	{
 		buffer[2]=0x00;
 		buffer[3]=0xA1;
