@@ -21,5 +21,5 @@ file(GLOB SOURCES "*.c")
 add_executable(${COMPONENT_NAME} ${SOURCES})
 add_definitions( -DUSE_HOSTCC )
 
-install(TARGETS ${COMPONENT_NAME} DESTINATION sbin)
+install(TARGETS ${COMPONENT_NAME} DESTINATION usr/sbin)
 
