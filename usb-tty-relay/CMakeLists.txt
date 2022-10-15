@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-set(COMPONENT_NAME usb-relay)  #set the name of the binary
+set(COMPONENT_NAME usb-tty-relay)  #set the name of the binary
 
 
 project(${COMPONENT_NAME})
