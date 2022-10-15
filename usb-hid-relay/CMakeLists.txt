@@ -8,6 +8,6 @@ set(AUTO_SVN_VERSION ON CACHE BOOL ON) #by default include svn revision numbers
 file(GLOB SOURCES "*.c")
 add_executable(${COMPONENT_NAME} ${SOURCES})
 #add_definitions( -DUSE_HOSTCC )
-target_link_libraries(${COMPONENT_NAME} hidapi-libusb)
+target_link_libraries(${COMPONENT_NAME} hidapi-libusb argp)
 install(TARGETS ${COMPONENT_NAME} DESTINATION usr/sbin)
 
