@@ -8,8 +8,10 @@ TTY_RELAY_ID="1a86:7523"
 HID_RELAY_ID="16c0:05df"
 TTY_RELAY="no"
 HID_RELAY="no"
+MODBUS_RELAY="no"
 JSONARG="no"
 TTY_DEVICE="/dev/ttyUSB0"
+MODBUSCLT=modbusclt
 #dmesg | awk '/tty/ && /USB/ {print "/dev/"$10}'|tail -1
 
 lsusb | grep $TTY_RELAY_ID > /dev/null
@@ -20,6 +22,11 @@ fi
 lsusb | grep $HID_RELAY_ID > /dev/null
 if [ $? = 0 ]; then
 	HID_RELAY="yes"
+fi
+
+RES=$(modbusclt --iostate=0,1 | awk '{print $7}')
+if [ "$RES" == "return=Success" ]; then
+	MODBUS_RELAY="yes"
 fi
 
 if [ -z $1 ]; then
@@ -44,16 +51,40 @@ fi
 #check if second arg existing incase if 1st one is not a json file
 if [ "$JSONARG" = "no" ]; then
 	if [ -z $2 ]; then
-		echo "usage: $0 <relay-position> <on/off>"
+		#read current relay stat
+		#echo "usage: $0 <relay-position> <on/off>"
+		if [ "$MODBUS_RELAY" == "yes" ]; then
+			RES=$($MODBUSCLT --iostate=0,$MYARG1 | awk '{print $9}' | sed 's|result=||')
+			echo "{\"position\": $MYARG1, \"powerstate\": \"$RES\"}"
+			return 0
+		fi
+		if [ $HID_RELAY = "yes" ]; then
+			if [ "$MYARG1" == "1" ]; then
+				USBDEV=$(usb-hid-relay | head -n 1 | sed 's|^.*=||')
+				if [ "$USBDEV" == "1" ]; then
+					echo "{\"position\": $MYARG1, \"powerstate\": \"on\"}"
+				else
+					echo "{\"position\": $MYARG1, \"powerstate\": \"off\"}"
+				fi
+				return 0
+			elif [ "$MYARG1" == "2" ]; then
+				USBDEV=$(usb-hid-relay | tail -n 1 | sed 's|^.*=||')
+				if [ "$USBDEV" == "1" ]; then
+					echo "{\"position\": $MYARG1, \"powerstate\": \"on\"}"
+				else
+					echo "{\"position\": $MYARG1, \"powerstate\": \"off\"}"
+				fi
+				return 0
+			else
+				echo "relay position is out of range(allowed is 1/2)"
+				return 1
+			fi
+		fi
+		echo "read function for this relay is not available"
 		return 1
 	else
 		MYARG2=$2
 	fi
-fi
-
-if [ $TTY_RELAY = "yes" ]; then
-	usb-tty-relay -d $TTY_DEVICE -n 1 -s $MYARG2 > /dev/null
-	return $?
 fi
 
 if [ $HID_RELAY = "yes" ]; then
@@ -78,4 +109,17 @@ if [ $HID_RELAY = "yes" ]; then
 	fi
 fi
 
+if [ "$MODBUS_RELAY" == "yes" ]; then
+	RES=$($MODBUSCLT --iostate=0,$MYARG1,$MYARG2 | awk '{print $7}')
+	if [ "$RES" == "return=Success" ]; then
+		return 0
+	else
+		return 1
+	fi
+fi
+
+if [ $TTY_RELAY = "yes" ]; then
+        usb-tty-relay -d $TTY_DEVICE -n 1 -s $MYARG2 > /dev/null
+        return $?
+fi
 #echo "arg1:$MYARG1  arg2:$MYARG2 count:$COUNT"
