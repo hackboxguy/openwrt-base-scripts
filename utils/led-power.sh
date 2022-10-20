@@ -25,7 +25,7 @@ if [ -f $1 ]; then
         if [ $? = "0" ]; then #this is a valid json file
                 MYARG=$(jq -r .powerstate $1)
         else
-                MYARG=$1 #just take argument as on/off string
+                MYARG=$1 #just take argument as on/off/toggle string
         fi
 else
         MYARG=$1
@@ -33,10 +33,18 @@ fi
 
 #write action
 if [ $MYARG = "on" ]; then
-	echo 1 > $LED_NODE
+	echo 255 > $LED_NODE
 	return 0
 elif [ $MYARG = "off" ]; then
 	echo 0 > $LED_NODE
+	return 0
+elif [ $MYARG = "toggle" ]; then
+	CURVAL=$(cat $LED_NODE)
+	if [ "$CURVAL" == "0" ]; then
+		echo 255 > $LED_NODE
+	else
+		echo 0 > $LED_NODE
+	fi
 	return 0
 else
 	echo "led-control: valid arguments are on/off"
