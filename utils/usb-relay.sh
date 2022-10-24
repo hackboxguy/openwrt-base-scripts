@@ -39,7 +39,8 @@ if [ -f $1 ]; then
         JQOBJ=$(jq type < $1)
         if [ $? = "0" ]; then #this is a valid json file
                 MYARG1=$(jq -r .position $1)
-                MYARG2=$(jq -r .state $1)
+                [ $MYARG1 = "null" ] && MYARG1=1 #just support standard {powerstate:on} format
+		MYARG2=$(jq -r .powerstate $1)
         	JSONARG="yes"
 	else
                 MYARG1=$1 #just take argument as position
