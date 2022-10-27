@@ -4,6 +4,7 @@
 #if argument is a json file, then value of a key is extracted and written to blink(1) dongle
 #if argument is a string, then value of this string will be written to blink(1) dongle.
 #valid argument values are [off/white/red/green/blue/cyan/magenta/yellow]
+LAST_STATE_FILE=/tmp/last-rgb-led-state.txt
 FVER=$(blinkone-tool --fwversion)
 if [ $? != 0 ]; then
 	echo "{\"ledstate\":\"not_found\"}"
@@ -70,5 +71,44 @@ if [ $MYARG = "on" ]; then
 	MYARG=white
 fi
 
+if [ $MYARG = "toggle" ]; then
+	CURSTATE=$(blinkone-tool --rgbread|awk '{print $5}')
+	if [ $CURSTATE = "0x00,0x00,0x00" ]; then
+		if [ -f $LAST_STATE_FILE ]; then
+			LASTSTATE=$(cat $LAST_STATE_FILE)
+			blinkone-tool --$LASTSTATE
+		else
+			echo "white" > $LAST_STATE_FILE
+			blinkone-tool --white #we dont know the last state, hence just turn ON full white
+		fi
+	else
+		case "$CURSTATE" in
+		"0xff,0x00,0x00")
+			echo "red" > $LAST_STATE_FILE
+			;;
+		"0x00,0xff,0x00")
+			echo "green" > $LAST_STATE_FILE
+			;;
+		"0x00,0x00,0xff")
+			echo "blue" > $LAST_STATE_FILE
+			;;
+		"0x00,0xff,0xff")
+			echo "cyan" > $LAST_STATE_FILE
+			;;
+		"0xff,0x00,0xff")
+			echo "magenta" > $LAST_STATE_FILE
+			;;
+		"0xff,0xff,0x00")
+			echo "yellow" > $LAST_STATE_FILE
+			;;
+		*)
+			echo "white" > $LAST_STATE_FILE
+			;;
+		esac
+		blinkone-tool --off
+	fi
+	return 0
+fi
+echo "$MYARG" > $LAST_STATE_FILE
 blinkone-tool --$MYARG > /dev/null
 return $?
