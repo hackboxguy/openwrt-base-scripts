@@ -11,7 +11,7 @@ HID_RELAY="no"
 MODBUS_RELAY="no"
 JSONARG="no"
 TTY_DEVICE="/dev/ttyUSB0"
-MODBUSCLT=modbusclt
+MODBUSCLT=/opt/fmw/bin/modbusclt
 TTY_RELAY_LASTSTATE=/tmp/tty-relay-last-state.txt
 #dmesg | awk '/tty/ && /USB/ {print "/dev/"$10}'|tail -1
 
@@ -25,7 +25,7 @@ if [ $? = 0 ]; then
 	HID_RELAY="yes"
 fi
 
-RES=$(modbusclt --iostate=0,1 | awk '{print $7}')
+RES=$($MODBUSCLT --iostate=0,1 | awk '{print $7}')
 if [ "$RES" == "return=Success" ]; then
 	MODBUS_RELAY="yes"
 fi

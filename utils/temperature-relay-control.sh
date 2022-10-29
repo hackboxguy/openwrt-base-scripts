@@ -29,6 +29,7 @@ HYSTERESIS=$(uci show awsiot-demo | grep "awsiot-demo.Settings.subhysteresis"| s
 let X=$((THRESHOLD))
 let Y=$((HYSTERESIS))
 X=$((X-Y))
+TEMPROUND=$(printf '%.*f\n' 0 $TEMPVAL) #round to nearest integer
 
 RELAYSTS=$($RELAYCTRL 1)
 JQOBJ=$(echo $RELAYSTS | jq type )
@@ -36,11 +37,11 @@ if [ $? = "0" ]; then #this is a valid json file
 	RELAYVAL=$(echo $RELAYSTS | jq -r .powerstate)
 fi
 if [ $RELAYVAL = "on" ]; then
-	if [ $TEMPVAL -le $X ]; then
+	if [ $TEMPROUND -le $X ]; then
 		$RELAYCTRL 1 "off" #temp has cooled down, so switch OFF the relay
 	fi
 else
-	if [ $TEMPVAL -ge $THRESHOLD ]; then
+	if [ $TEMPROUND -ge $THRESHOLD ]; then
 		$RELAYCTRL 1 "on" #temp has crossed the threshold,  so switch ON the relay
 	fi
 fi
