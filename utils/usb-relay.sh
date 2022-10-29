@@ -12,6 +12,7 @@ MODBUS_RELAY="no"
 JSONARG="no"
 TTY_DEVICE="/dev/ttyUSB0"
 MODBUSCLT=modbusclt
+TTY_RELAY_LASTSTATE=/tmp/tty-relay-last-state.txt
 #dmesg | awk '/tty/ && /USB/ {print "/dev/"$10}'|tail -1
 
 lsusb | grep $TTY_RELAY_ID > /dev/null
@@ -81,8 +82,15 @@ if [ "$JSONARG" = "no" ]; then
 				return 1
 			fi
 		fi
-		echo "read function for this relay is not available"
-		return 1
+		#check if we remember last state of tty-relay through a tmp file
+		if [ -f $TTY_RELAY_LASTSTATE ]; then
+			LASTSTATE=$(cat $TTY_RELAY_LASTSTATE)
+			echo "{\"position\": $MYARG1, \"powerstate\": \"$LASTSTATE\"}"
+		else
+			echo "{\"position\": $MYARG1, \"powerstate\": \"unknown\"}"
+		fi
+		#echo "read function for this relay is not available"
+		return 0
 	else
 		MYARG2=$2
 	fi
@@ -120,7 +128,9 @@ if [ "$MODBUS_RELAY" == "yes" ]; then
 fi
 
 if [ $TTY_RELAY = "yes" ]; then
-        usb-tty-relay -d $TTY_DEVICE -n 1 -s $MYARG2 > /dev/null
+	#remember last state in a file
+	echo $MYARG2 > $TTY_RELAY_LASTSTATE
+	usb-tty-relay -d $TTY_DEVICE -n 1 -s $MYARG2 > /dev/null
         return $?
 fi
 #echo "arg1:$MYARG1  arg2:$MYARG2 count:$COUNT"
