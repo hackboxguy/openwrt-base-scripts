@@ -13,7 +13,7 @@ if [ $? != 0 ]; then
 else
 	#single digit firewall rule number
 	RULENUM=$(uci show | grep "firewall.@rule\[.\]\.dest_port='80'" |sed 's|firewall.@rule\[||g' | sed 's|].*||g')
-	NOSET=0
+	NOTSET=0
 fi
 
 #if request is for reading the current status
@@ -23,13 +23,17 @@ if [ -z $1 ]; then
 		echo "off"
 		return 0
 	else
-		#STATE=$(uci show | grep "firewall.@rule\[$RULENUM\]\.enabled='1'")
-		STATE=$(uci -q get firewall.@rule[10].enabled)
-		if [ $STATE = 0 ]; then
-			echo "off"
+		STATE=$(uci -q get firewall.@rule[$RULENUM].enabled)
+		if [ $? = 0 ]; then
+			STATE=$(uci -q get firewall.@rule[$RULENUM].enabled)
+			if [ $STATE = 0 ]; then
+				echo "off"
+			else
+				echo "on"
+			fi
 			return 0
 		else
-			echo "on"
+			echo "off"
 			return 0
 		fi
 	fi
