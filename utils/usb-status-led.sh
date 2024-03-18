@@ -5,11 +5,13 @@
 #if argument is a string, then value of this string will be written to blink(1) dongle.
 #valid argument values are [off/white/red/green/blue/cyan/magenta/yellow]
 LAST_STATE_FILE=/tmp/last-rgb-led-state.txt
-FVER=$(blinkone-tool --fwversion)
-if [ $? != 0 ]; then
-	echo "{\"ledstate\":\"not_found\"}"
-	return 1
-fi
+
+#fmw version check is changing the value of --rgbread command, hence disabled this check
+#FVER=$(blinkone-tool --fwversion)
+#if [ $? != 0 ]; then
+#	echo "{\"ledstate\":\"not_found\"}"
+#	return 1
+#fi
 
 #read action
 if [ -z $1 ]; then
