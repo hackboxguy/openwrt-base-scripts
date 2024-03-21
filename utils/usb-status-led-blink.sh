@@ -58,4 +58,5 @@ blinkone-tool -m $BLINK_TIME --rgb $BLINK_VALUE --setpattline 2 > /dev/null
 blinkone-tool -m $BLINK_TIME --rgb 0x00,0x00,0x00 --setpattline 3 > /dev/null
 blinkone-tool --savepattern > /dev/null
 blinkone-tool --play 1 > /dev/null
+echo "success"
 exit 0
